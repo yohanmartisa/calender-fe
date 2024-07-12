@@ -1,33 +1,240 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Mengimpor Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+  --primary-color: #0056b3; /* Biru gelap */
+  --secondary-color: #e2e3e5; /* Abu-abu muda */
+  --text-color: #333; /* Warna teks gelap */
+  --background-color: #ffffff; /* Latar belakang putih */
+  --border-color: #ddd; /* Warna border */
+  --shadow-light: 0 2px 5px rgba(0,0,0,0.1);
+  --shadow-heavy: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+  color: #333;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+h1, h2, h3 {
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+p {
+  line-height: 1.6;
+}
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  z-index: 1000;
+}
+button {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: var(--shadow-light);
+}
+
+button:hover, button:focus {
+  background-color: var(--hover-color);
+  box-shadow: var(--shadow-heavy);
+  outline: none;
+}
+
+header {
+  background: linear-gradient(to right, #1a73e8, #2a8bf2);
+  color: var(--text-color);
+  padding: 16px;
+  box-shadow: var(--shadow-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-logo {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.header-nav {
+  display: flex;
+  gap: 20px;
+}
+
+.header-nav a {
+  color: var(--text-color);
+  text-decoration: none;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.header-nav a:hover {
+  color: white;
+  background-color: var(--hover-color);
+}
+
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    padding: 10px;
   }
+
+  .header-nav {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .header-nav a {
+    padding: 10px;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr); /* 7 kolom untuk hari */
+  gap: 1px;
+}
+
+.calendar-day {
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  padding: 10px;
+  position: relative; /* Untuk positioning elemen di dalamnya */
+}
+
+.calendar-day:hover {
+  background-color: var(--hover-color);
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .calendar-grid {
+    grid-template-columns: repeat(7, 1fr); /* Tetap 7 kolom tapi dengan padding yang lebih kecil */
+  }
+
+  .calendar-day {
+    padding: 5px;
+  }
+}
+
+/* Mengubah styling pada header kalender */
+.rbc-toolbar {
+  background-color: #ffffff;
+  color: #333; 
+  padding: 10px 20px; 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  margin-bottom: 20px;
+  border-radius: 8px; 
+  overflow: hidden; 
+}
+
+/* Mengubah styling pada tombol navigasi */
+.rbc-toolbar button {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-weight: bold;
+  box-shadow: var(--shadow-light);
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.rbc-toolbar button:hover {
+  background-color: var(--hover-color);
+  box-shadow: var(--shadow-heavy);
+}
+
+/* Mengubah styling pada label bulan dan tahun */
+.rbc-toolbar-label {
+  font-size: 16px; /* Ukuran font lebih besar */
+  font-weight: bold; /* Font tebal */
+}
+
+/* Mengubah styling pada cell kalender */
+.rbc-day-bg {
+  border-bottom: 1px solid #eee; /* Border lebih halus */
+}
+
+.rbc-selected-cell {
+  background-color: #007bff30; /* Warna latar saat cell dipilih */
+}
+
+.rbc-today {
+  background-color: var(--background-color); /* Warna latar untuk hari ini */
+  font-weight: bold; /* Membuat teks lebih tebal */
+}
+
+/* Mengubah styling untuk event di kalender */
+.rbc-event {
+  background-color: #007bff; /* Warna latar event */
+  color: white; /* Warna teks */
+  border-radius: 4px; /* Rounded corners */
+  padding: 4px 8px; /* Padding */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Shadow untuk depth */
+  cursor: pointer; /* Cursor pointer */
+}
+
+.rbc-event:hover {
+  background-color: #0056b3; /* Warna saat di-hover */
+}
+
+input[type="text"], input[type="datetime-local"] {
+  border: 1px solid #ccc;
+  padding: 8px;
+  width: 100%;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.event-card {
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.event-card h3 {
+  color: #333;
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.event-card p {
+  color: #666;
+  font-size: 14px;
 }
