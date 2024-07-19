@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import '../globals.css'
+import React, { useEffect, useState } from 'react';
+import './EventModal.css'
 
 interface EventModalProps {
   show: boolean;
   onClose: () => void;
   onSave: (events: { title: string; description: string; person: string; start: Date; end: Date }[]) => void;
+  onUpdate: (events: { id:number; title: string; description: string; person: string; start: Date; end: Date }) => void;
   onDelete: (id: number) => void;
   initialEvent: {
     id: number; title: string; description: string; person: string; start: Date; end: Date 
@@ -12,7 +13,11 @@ interface EventModalProps {
   existingEvents: { id: number; start: Date; end: Date }[];
   token: string;
 }
-const EventModal = ({ show, onClose, onDelete, onSave, initialEvent, existingEvents, token }: EventModalProps) => {
+interface Person {
+  id: number;
+  name: string;
+}
+const EventModal = ({ show, onClose, onDelete, onSave, onUpdate, initialEvent, existingEvents, token }: EventModalProps) => {
   const [id, setId] = useState(initialEvent ? initialEvent.id : 0);
   const [title, setTitle] = useState(initialEvent ? initialEvent.title : '');
   const [description, setDescription] = useState(initialEvent ? initialEvent.description : '');
@@ -22,7 +27,28 @@ const EventModal = ({ show, onClose, onDelete, onSave, initialEvent, existingEve
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurringFrequency, setRecurringFrequency] = useState('daily');
   const [recurringDuration, setRecurringDuration] = useState(1);
-  
+  const [people, setPeople] = useState<Person[]>([]);
+
+  useEffect(() => {
+    const fetchPeople = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/users', {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setPeople(data);
+        }
+      } catch (error) {
+        console.error('Error fetching person:', error);
+      }
+    };
+
+    fetchPeople();
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -54,9 +80,35 @@ const EventModal = ({ show, onClose, onDelete, onSave, initialEvent, existingEve
         window.location.reload();
         onClose();
   };
-
+  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (initialEvent) {
+      try {
+        const { id } = initialEvent;
+        const response = await fetch(`http://localhost:3001/events/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ id, title, description, person, start, end }), // Include id in the body
+        });
+  
+        if (response.ok) {
+          window.location.reload();
+          onUpdate({ id, title, description, person, start, end });
+          onClose();
+        } else {
+          console.error('Failed to update event');
+        }
+      } catch (error) {
+        console.error('Error updating event:', error);
+      }
+    }
+  };
+  
   const handleDelete = async () => {
-    console.log(initialEvent);
     if (initialEvent) {
       const response = await fetch(`http://localhost:3001/events/${initialEvent.id}`, {
         method: 'DELETE',
@@ -73,7 +125,11 @@ const EventModal = ({ show, onClose, onDelete, onSave, initialEvent, existingEve
     }
   };
 
-
+  const formatLocalDateTime = (date: Date) => {
+    const offset = date.getTimezoneOffset();
+    const adjustedDate = new Date(date.getTime() - (offset * 60 * 1000));
+    return adjustedDate.toISOString().slice(0, 16);
+  };
   const generateRecurringEvents = (event: { title: string; description: string; person: string; start: Date; end: Date; isRecurring: boolean; recurringFrequency: string; recurringDuration: number}) => {
     const recurringEvents: { title: string; description: string; person: string; start: Date; end: Date }[] = [];
     let currentDate = new Date(event.start);
@@ -100,66 +156,85 @@ const EventModal = ({ show, onClose, onDelete, onSave, initialEvent, existingEve
     }
     return recurringEvents;
   };
-
   return (
-    <div className="modal">
-      <form>
-        <input
-          type="checkbox"
-          checked={isRecurring}
-          onChange={(e) => setIsRecurring(e.target.checked)}
-        />
-        <label>Recurring Event</label>
-        {isRecurring && (
-          <div>
-            <select
-              value={recurringFrequency}
-              onChange={(e) => setRecurringFrequency(e.target.value)}
-            >
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-            </select>
-            <input
-              type="number"
-              value={recurringDuration}
-              onChange={(e) => setRecurringDuration(parseInt(e.target.value))}
-            />
-            <label>Duration</label>
-          </div>
+    <div>
+      <div className="modal-overlay" onClick={onClose}></div>
+      <div className="modal">
+        <form>
+        {id === 0 ? (
+          <input
+            type="checkbox"
+            checked={isRecurring}
+            onChange={(e) => setIsRecurring(e.target.checked)}
+          />
+        ): (
+          <div></div>
         )}
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Add title"
-        />
-        <input
-          type="text"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Add description"
-        />
-        <input
-          type="text"
-          value={person}
-          onChange={(e) => setPerson(e.target.value)}
-          placeholder="Add person"
-        />
-        <input
-          type="datetime-local"
-          value={start.toISOString().slice(0, 16)}
-          onChange={(e) => setStart(new Date(e.target.value))}
-        />
-        <input
-          type="datetime-local"
-          value={end.toISOString().slice(0, 16)}
-          onChange={(e) => setEnd(new Date(e.target.value))}
-        />
-        <button type="submit" onClick={handleSubmit as any}>Save</button>
-        <button type="button" onClick={onClose as any}>Cancel</button>
-        <button type="button" onClick={handleDelete as any}>Delete</button>
-      </form>
+          <label>Recurring Event</label>
+          {isRecurring && (
+            <div>
+              <select
+                value={recurringFrequency}
+                onChange={(e) => setRecurringFrequency(e.target.value)}
+              >
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+              <input
+                type="number"
+                value={recurringDuration}
+                onChange={(e) => setRecurringDuration(parseInt(e.target.value))}
+              />
+              <label>Duration</label>
+            </div>
+          )}
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Add title"
+          />
+          <input
+            type="text"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Add description"
+          />
+          <div>
+          <select
+            value={person || ''}
+            onChange={(e) => setPerson(e.target.value)}
+          >
+            <option value="">Select person</option>
+            {people.map(person => (
+              <option key={person.id} value={person.name}>
+                {person.name}
+              </option>
+            ))}
+          </select>
+        </div>
+          <input
+            className="datetime-input"
+            type="datetime-local"
+            value={formatLocalDateTime(start)}
+            onChange={(e) => setStart(new Date(e.target.value))}
+          />
+          <input
+            className="datetime-input"
+            type="datetime-local"
+            value={formatLocalDateTime(end)}
+            onChange={(e) => setEnd(new Date(e.target.value))}
+          />
+          {id === 0 ? (
+            <button type="submit" onClick={handleSubmit as any}>Save</button>
+          ) : (
+            <button type="button" onClick={handleUpdate as any}>Update</button>
+          )}        
+          <button type="button" onClick={onClose as any}>Cancel</button>
+          <button type="button" onClick={handleDelete as any}>Delete</button>
+        </form>
+      </div>
     </div>
   );
 };

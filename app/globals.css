@@ -27,17 +27,7 @@ h1, h2, h3 {
 p {
   line-height: 1.6;
 }
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: white;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  z-index: 1000;
-}
+
 button {
   background-color: var(--primary-color);
   color: var(--text-color);
@@ -237,4 +227,50 @@ button:hover {
 .event-card p {
   color: #666;
   font-size: 14px;
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+}
+.filter-container {
+  background-color: #fff;
+  padding: 15px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.filter-container input[type="text"],
+.filter-container select {
+  padding: 10px 15px;
+  margin: 0 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease-in-out;
+}
+
+.filter-container input[type="text"]:focus,
+.filter-container select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.filter-container input[type="text"] {
+  width: 300px;
+}
+
+.filter-container select {
+  min-width: 150px;
+}
+
+.filter-container input[type="text"]::placeholder {
+  color: #aaa;
+  font-style: italic;
+}
+
+.filter-container select option {
+  padding: 10px;
 }
